@@ -1,23 +1,26 @@
-'use client';
-import { useState } from 'react';
-import { gql } from '@apollo/client';
-import { useRouter } from 'next/navigation';
-import { useMutation } from '@apollo/client/react';
-import { useUser } from '../context/UserContext';
+"use client";
+import { useState } from "react";
+import { gql } from "@apollo/client";
+import { useRouter } from "next/navigation";
+import { useMutation } from "@apollo/client/react";
+import { useUser } from "../context/UserContext";
 
-// ✅ GraphQL mutation updated to match backend
-const REGISTER = gql`
-  mutation Register($email: String!, $password: String!, $name: String) {
-    register(email: $email, password: $password, name: $name) {
+const CREATE_USER = gql`
+  mutation CreateUser($input: CreateUserInput!) {
+    createUser(input: $input) {
       id
       email
       name
-      createdAt
-      updatedAt
+      currentLevel
     }
   }
 `;
-
+interface CreateUserInput {
+  email: string;
+  password: string;
+  name?: string;
+  currentLevel?: string;
+}
 
 interface User {
   id: string;
@@ -29,7 +32,7 @@ interface User {
 }
 
 interface RegisterResponse {
-  register: User;
+  createUser: User;
 }
 
 interface RegisterVariables {
@@ -39,23 +42,28 @@ interface RegisterVariables {
 }
 
 export default function RegisterPage() {
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
-  const [register, { loading, error }] = useMutation<RegisterResponse, RegisterVariables>(REGISTER);
+  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [createUser, { loading, error }] = useMutation<
+    { createUser: User },
+    { input: CreateUserInput }
+  >(CREATE_USER);
   const { login } = useUser();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const { data } = await register({ variables: form });
+      const { data } = await createUser({
+        variables: { input: form },
+      });
       if (data) {
         // Store token and user data
-        localStorage.setItem('token', 'mock-jwt-token'); // Replace with actual token from your API
-        login(data.register);
-        router.push('/dashboard');
+        localStorage.setItem("token", "mock-jwt-token"); // Replace with actual token from your API
+        login(data.createUser);
+        router.push("/dashboard");
       }
     } catch (err) {
-      console.error('Registration error:', err);
+      console.error("Registration error:", err);
     }
   };
 
@@ -73,7 +81,10 @@ export default function RegisterPage() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Full Name
               </label>
               <input
@@ -88,7 +99,10 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Email Address
               </label>
               <input
@@ -103,7 +117,10 @@ export default function RegisterPage() {
               />
             </div>
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Password
               </label>
               <input
@@ -131,14 +148,17 @@ export default function RegisterPage() {
               disabled={loading}
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating account...' : 'Create account'}
+              {loading ? "Creating account..." : "Create account"}
             </button>
           </div>
 
           <div className="text-center">
             <span className="text-sm text-gray-600">
-              Already have an account?{' '}
-              <a href="/login" className="font-medium text-purple-600 hover:text-purple-500">
+              Already have an account?{" "}
+              <a
+                href="/login"
+                className="font-medium text-purple-600 hover:text-purple-500"
+              >
                 Sign in
               </a>
             </span>
