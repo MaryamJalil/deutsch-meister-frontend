@@ -2,8 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useUser } from '../context/UserContext';
-import StreakCounter from '@/components/StreakCounter';
+import { useUser } from '../../context/UserContext';
 import ProgressChart from '@/components/ProgressChart';
 
 
@@ -77,7 +76,7 @@ export default function DashboardPage() {
                 Continue your German learning journey. You are doing great!
               </p>
             </div>
-            <StreakCounter streak={user.streak} xp={user.xp} />
+            {/* <StreakCounter streak={user.streak} xp={user.xp} /> */}
           </div>
         </div>
 

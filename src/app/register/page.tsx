@@ -3,7 +3,7 @@ import { useState } from "react";
 import { gql } from "@apollo/client";
 import { useRouter } from "next/navigation";
 import { useMutation } from "@apollo/client/react";
-import { useUser } from "../context/UserContext";
+import { useUser } from "@/context/UserContext";
 
 const CREATE_USER = gql`
   mutation CreateUser($input: CreateUserInput!) {
@@ -23,22 +23,10 @@ interface CreateUserInput {
 }
 
 interface User {
-  id: string;
-  email: string;
+  id: number;
   name: string;
-  streak: number;
-  level: string;
-  xp: number;
-}
-
-interface RegisterResponse {
-  createUser: User;
-}
-
-interface RegisterVariables {
   email: string;
-  password: string;
-  name: string;
+  currentLevel?: string;
 }
 
 export default function RegisterPage() {

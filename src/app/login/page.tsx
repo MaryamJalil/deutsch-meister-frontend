@@ -1,55 +1,67 @@
 'use client';
+
 import { useState } from 'react';
 import { gql } from '@apollo/client';
-import { useMutation } from '@apollo/client/react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '../context/UserContext';
+import { useMutation } from '@apollo/client/react';
+import { useUser } from '@/context/UserContext';
 
+// Fixed GraphQL mutation - using input object and correct field names
 const LOGIN = gql`
-  mutation Login($email: String!, $password: String!) {
-    login(email: $email, password: $password) {
-      access_token
+  mutation Login($input: LoginInput!) {
+    login(input: $input) {
+      token
       user {
         id
         name
         email
+        currentLevel
       }
     }
   }
 `;
 
 interface User {
-  id: string;
+  id: number;
   email: string;
   name: string;
-  streak: number;
-  level: string;
-  xp: number;
+  currentLevel?: string;
 }
 
 interface LoginResponse {
-  login: User;
+  login: {
+    token: string;
+    user: User;
+  };
 }
 
-interface LoginVariables {
+interface LoginInput {
   email: string;
   password: string;
 }
 
 export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
-  const [login, { loading, error }] = useMutation<LoginResponse, LoginVariables>(LOGIN);
-  const { login: userLogin, updateStreak } = useUser();
+  const [loginMutation, { loading, error }] = useMutation<LoginResponse, { input: LoginInput }>(LOGIN);
+  const { login: loginUser } = useUser();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      const { data } = await login({ variables: form });
+      const { data } = await loginMutation({ 
+        variables: { 
+          input: form  // Wrap form data in input object
+        } 
+      });
+      
       if (data) {
-        localStorage.setItem('token', 'mock-jwt-token');
-        userLogin(data.login);
-        updateStreak();
+        localStorage.setItem('token', data.login.token); // Use token instead of access_token
+        loginUser({
+          ...data.login.user,
+          id: data.login.user.id, // Keep as string to match UserContext
+        });
         router.push('/dashboard');
       }
     } catch (err) {
@@ -60,19 +72,18 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-2xl shadow-lg">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Welcome back
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Continue your German learning journey
+        <div className="text-center">
+          <h2 className="text-3xl font-extrabold text-gray-900">Welcome back</h2>
+          <p className="mt-2 text-sm text-gray-600">
+            Sign in to your account
           </p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        
+        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
           <div className="space-y-4">
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email Address
+                Email
               </label>
               <input
                 id="email"
@@ -85,6 +96,7 @@ export default function LoginPage() {
                 placeholder="Enter your email"
               />
             </div>
+            
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
@@ -108,20 +120,21 @@ export default function LoginPage() {
             </div>
           )}
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Signing in...' : 'Sign in'}
-            </button>
-          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {loading ? 'Signing in...' : 'Sign in'}
+          </button>
 
           <div className="text-center">
             <span className="text-sm text-gray-600">
-              Don&apos;t have an account?{' '}
-              <a href="/register" className="font-medium text-purple-600 hover:text-purple-500">
+              Dont have an account?{' '}
+              <a
+                href="/register"
+                className="font-medium text-purple-600 hover:text-purple-500"
+              >
                 Sign up
               </a>
             </span>
