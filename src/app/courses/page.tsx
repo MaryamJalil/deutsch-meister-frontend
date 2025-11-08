@@ -87,8 +87,6 @@ export default function CoursesPage() {
   );
 
   const courses = data?.courses || [];
-  debugger;
-console.log(courses,'courses')
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -132,8 +130,8 @@ console.log(courses,'courses')
           
           {
           courses.map((course: Course) => {
-            const levelSlug = course.level.slug;
-            const colors = levelColors[levelSlug] || levelColors.default;
+            const slug = course.level.slug;
+            const colors = levelColors[slug] || levelColors.default;
             
             return (
               <div key={course.id} className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
@@ -141,7 +139,7 @@ console.log(courses,'courses')
                 <div className="p-6">
                   <div className="flex items-center justify-between mb-4">
                     <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${colors.badge}`}>
-                      {levelSlug}
+                      {slug}
                     </span>
                   </div>
 
@@ -180,7 +178,7 @@ console.log(courses,'courses')
                   </div>
 
                   <Link
-                    href={`/courses/${course.id}`}
+  href={`/courses/${course.level.slug}`} // ✅ use level.slug here
                     className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors block text-center"
                   >
                     Start Learning
