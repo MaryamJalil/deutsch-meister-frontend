@@ -1,6 +1,7 @@
 
 import Link from 'next/link';
 import CourseCard from '@/components/CourseCard';
+import Navbar from '@/components/Navbar';
 
 const featuredCourses = [
   {
@@ -56,6 +57,7 @@ const featuredCourses = [
 export default function HomePage() {
   return (
     <div className="pt-16">
+            <Navbar />
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-purple-700 to-purple-900 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
