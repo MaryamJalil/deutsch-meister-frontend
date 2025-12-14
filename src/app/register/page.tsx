@@ -1,20 +1,13 @@
-"use client";
-import { useState } from "react";
-import { gql } from "@apollo/client";
-import { useRouter } from "next/navigation";
-import { useMutation } from "@apollo/client/react";
-import { useUser } from "@/context/UserContext";
+'use client';
 
-const CREATE_USER = gql`
-  mutation CreateUser($input: CreateUserInput!) {
-    createUser(input: $input) {
-      id
-      email
-      name
-      currentLevel
-    }
-  }
-`;
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useMutation } from '@apollo/client/react';
+import { useUser } from '@/context/UserContext';
+import { CREATE_USER_MUTATION } from '@/lib/queries';
+import { User } from '@/types';
+import Link from 'next/link';
+
 interface CreateUserInput {
   email: string;
   password: string;
@@ -22,19 +15,12 @@ interface CreateUserInput {
   currentLevel?: string;
 }
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  currentLevel?: string;
-}
-
 export default function RegisterPage() {
-  const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [form, setForm] = useState<CreateUserInput>({ name: '', email: '', password: '' });
   const [createUser, { loading, error }] = useMutation<
     { createUser: User },
     { input: CreateUserInput }
-  >(CREATE_USER);
+  >(CREATE_USER_MUTATION);
   const { login } = useUser();
   const router = useRouter();
 
@@ -44,14 +30,14 @@ export default function RegisterPage() {
       const { data } = await createUser({
         variables: { input: form },
       });
-      if (data) {
-        // Store token and user data
-        localStorage.setItem("token", "mock-jwt-token"); // Replace with actual token from your API
-        login(data.createUser);
-        router.push("/dashboard");
+      if (data?.createUser) {
+        // Note: The API should return a token on user creation
+        // For now, using a placeholder - update when backend supports it
+        login(data.createUser, 'mock-jwt-token');
+        router.push('/dashboard');
       }
     } catch (err) {
-      console.error("Registration error:", err);
+      console.error('Registration error:', err);
     }
   };
 
@@ -142,13 +128,13 @@ export default function RegisterPage() {
 
           <div className="text-center">
             <span className="text-sm text-gray-600">
-              Already have an account?{" "}
-              <a
+              Already have an account?{' '}
+              <Link
                 href="/login"
                 className="font-medium text-purple-600 hover:text-purple-500"
               >
                 Sign in
-              </a>
+              </Link>
             </span>
           </div>
         </form>

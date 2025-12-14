@@ -1,9 +1,18 @@
 
 'use client';
 
-export default function ProgressChart() {
-  // Mock data for the chart
-  const progressData = [
+interface ProgressDataPoint {
+  day: string;
+  lessons: number;
+}
+
+interface ProgressChartProps {
+  data?: ProgressDataPoint[];
+}
+
+export default function ProgressChart({ data: propData }: ProgressChartProps = { data: undefined }) {
+  // Mock data for the chart - replace with actual data from props when available
+  const progressData: ProgressDataPoint[] = propData || [
     { day: 'Mon', lessons: 3 },
     { day: 'Tue', lessons: 5 },
     { day: 'Wed', lessons: 2 },
@@ -13,7 +22,8 @@ export default function ProgressChart() {
     { day: 'Sun', lessons: 0 },
   ];
 
-  const maxLessons = Math.max(...progressData.map(d => d.lessons));
+  const maxLessons = Math.max(...progressData.map(d => d.lessons), 1);
+  const totalLessons = progressData.reduce((sum, d) => sum + d.lessons, 0);
 
   return (
     <div className="space-y-4">
@@ -34,7 +44,7 @@ export default function ProgressChart() {
       
       <div className="flex justify-between items-center pt-4 border-t border-gray-200">
         <div className="text-sm text-gray-600">
-          <span className="font-medium">This week:</span> 21 lessons completed
+          <span className="font-medium">This week:</span> {totalLessons} lessons completed
         </div>
         <div className="text-sm text-gray-600">
           <span className="font-medium">Goal:</span> 25 lessons

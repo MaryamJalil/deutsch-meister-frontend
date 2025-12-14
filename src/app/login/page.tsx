@@ -1,32 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { gql } from '@apollo/client';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@apollo/client/react';
 import { useUser } from '@/context/UserContext';
-
-// Fixed GraphQL mutation - using input object and correct field names
-const LOGIN = gql`
-  mutation Login($input: LoginInput!) {
-    login(input: $input) {
-      token
-      user {
-        id
-        name
-        email
-        currentLevel
-      }
-    }
-  }
-`;
-
-interface User {
-  id: number;
-  email: string;
-  name: string;
-  currentLevel?: string;
-}
+import { LOGIN_MUTATION } from '@/lib/queries';
+import { User } from '@/types';
+import Link from 'next/link';
 
 interface LoginResponse {
   login: {
@@ -41,8 +21,8 @@ interface LoginInput {
 }
 
 export default function LoginPage() {
-  const [form, setForm] = useState({ email: '', password: '' });
-  const [loginMutation, { loading, error }] = useMutation<LoginResponse, { input: LoginInput }>(LOGIN);
+  const [form, setForm] = useState<LoginInput>({ email: '', password: '' });
+  const [loginMutation, { loading, error }] = useMutation<LoginResponse, { input: LoginInput }>(LOGIN_MUTATION);
   const { login: loginUser } = useUser();
   const router = useRouter();
 
@@ -51,17 +31,11 @@ export default function LoginPage() {
 
     try {
       const { data } = await loginMutation({ 
-        variables: { 
-          input: form  // Wrap form data in input object
-        } 
+        variables: { input: form }
       });
       
-      if (data) {
-        localStorage.setItem('token', data.login.token); // Use token instead of access_token
-        loginUser({
-          ...data.login.user,
-          id: data.login.user.id, // Keep as string to match UserContext
-        });
+      if (data?.login) {
+        loginUser(data.login.user, data.login.token);
         router.push('/dashboard');
       }
     } catch (err) {
@@ -130,13 +104,13 @@ export default function LoginPage() {
 
           <div className="text-center">
             <span className="text-sm text-gray-600">
-              Dont have an account?{' '}
-              <a
+              Don&apos;t have an account?{' '}
+              <Link
                 href="/register"
                 className="font-medium text-purple-600 hover:text-purple-500"
               >
                 Sign up
-              </a>
+              </Link>
             </span>
           </div>
         </form>

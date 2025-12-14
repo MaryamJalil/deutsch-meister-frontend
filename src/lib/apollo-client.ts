@@ -6,20 +6,24 @@ import {
   HttpLink,
   ApolloLink,
 } from "@apollo/client";
+import { API_URL, STORAGE_KEYS } from "@/constants";
 
 const httpLink = new HttpLink({
-  // uri: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/graphql',
-  uri: "http://localhost:4000/graphql",
+  uri: API_URL,
 });
 
 const authLink = new ApolloLink((operation, forward) => {
   if (typeof window !== "undefined") {
-    const token = localStorage.getItem("token");
-    operation.setContext({
-      headers: {
-        authorization: token ? `Bearer ${token}` : "",
-      },
-    });
+    try {
+      const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+      operation.setContext({
+        headers: {
+          authorization: token ? `Bearer ${token}` : "",
+        },
+      });
+    } catch (error) {
+      console.error("Error accessing localStorage:", error);
+    }
   }
   return forward(operation);
 });
@@ -28,4 +32,12 @@ export const client = new ApolloClient({
   link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
   ssrMode: typeof window === "undefined",
+  defaultOptions: {
+    watchQuery: {
+      errorPolicy: "all",
+    },
+    query: {
+      errorPolicy: "all",
+    },
+  },
 });

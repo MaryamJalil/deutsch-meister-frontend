@@ -1,94 +1,34 @@
 'use client';
 
 import Link from 'next/link';
-import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
+import { GET_COURSES } from '@/lib/queries';
+import { Course } from '@/types';
+import { CEFR_LEVELS, LEVEL_COLORS } from '@/constants';
+import Loading from '@/components/ui/Loading';
+import ErrorDisplay from '@/components/ui/ErrorDisplay';
 
-// Define TypeScript interfaces
-interface Level {
-  slug: string;
-  title: string;
-}
-
-interface Course {
-  id: string;
-  title: string;
-  description: string;
-  hours: number;
-  lessonCount: number;
-  features: string[];
-  level: Level;
-}
-
-const GET_COURSES = gql`
-  query courses {
-    courses {
-      id
-      title
-      description
-      hours
-      lessonCount
-      features
-      level {
-        slug
-        title
-      }
-    }
-  }
-`;
-
-// Color mapping for levels
-const levelColors: { [key: string]: { bg: string; badge: string } } = {
-  'A1': { bg: 'from-green-500 to-emerald-500', badge: 'bg-green-100 text-green-800' },
-  'A2': { bg: 'from-blue-500 to-cyan-500', badge: 'bg-blue-100 text-blue-800' },
-  'B1': { bg: 'from-purple-500 to-indigo-500', badge: 'bg-purple-100 text-purple-800' },
-  'B2': { bg: 'from-orange-500 to-red-500', badge: 'bg-orange-100 text-orange-800' },
-  'C1': { bg: 'from-pink-500 to-rose-500', badge: 'bg-pink-100 text-pink-800' },
-  'C2': { bg: 'from-red-500 to-pink-500', badge: 'bg-red-100 text-red-800' },
-  'default': { bg: 'from-teal-500 to-blue-500', badge: 'bg-teal-100 text-teal-800' }
-};
-
-// CEFR levels data for the guide
-const cefrLevels = [
-  { level: 'A1', title: 'Beginner' },
-  { level: 'A2', title: 'Elementary' },
-  { level: 'B1', title: 'Intermediate' },
-  { level: 'B2', title: 'Upper Intermediate' },
-  { level: 'C1', title: 'Advanced' },
-  { level: 'C2', title: 'Proficient' }
-];
-
-// Define the response type for the GraphQL query
 interface CoursesResponse {
   courses: Course[];
 }
 
 export default function CoursesPage() {
-  const { loading, error, data } = useQuery<CoursesResponse>(GET_COURSES);
+  const { loading, error, data, refetch } = useQuery<CoursesResponse>(GET_COURSES);
   
-  if (loading) return (
-    <div className="min-h-screen bg-gray-50 pt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center">
-          <div className="animate-pulse">Loading courses...</div>
-        </div>
-      </div>
-    </div>
-  );
+  if (loading) return <Loading message="Loading courses..." />;
 
   if (error) return (
-    <div className="min-h-screen bg-gray-50 pt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center text-red-600">
-          Error loading courses: {error.message}
-        </div>
-      </div>
-    </div>
+    <ErrorDisplay
+      message={error.message}
+      title="Error loading courses"
+      onRetry={() => refetch()}
+    />
   );
 
   const courses = data?.courses || [];
+  
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="text-center mb-12">
@@ -105,7 +45,7 @@ export default function CoursesPage() {
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-12">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">CEFR Levels Guide</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {cefrLevels.map(({ level, title }) => (
+            {CEFR_LEVELS.map(({ level, title }) => (
               <div key={level} className="text-center p-4 border border-gray-200 rounded-lg">
                 <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 ${
                   level === 'A1' ? 'bg-green-100 text-green-600' :
@@ -128,10 +68,9 @@ export default function CoursesPage() {
         {/* Courses Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           
-          {
-          courses.map((course: Course) => {
+          {courses.map((course) => {
             const slug = course.level.slug;
-            const colors = levelColors[slug] || levelColors.default;
+            const colors = LEVEL_COLORS[slug] || LEVEL_COLORS.default;
             
             return (
               <div key={course.id} className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
@@ -146,21 +85,6 @@ export default function CoursesPage() {
                   <h3 className="text-xl font-bold text-gray-900 mb-3">{course.title}</h3>
                   <p className="text-gray-600 mb-4">{course.description}</p>
 
-                  <div className="space-y-2 mb-6">
-                    {/* {course.features.slice(0, 3).map((feature: string, index: number) => (
-                      <div key={index} className="flex items-center text-sm text-gray-600">
-                        <svg className="w-4 h-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                        </svg>
-                        {feature}
-                      </div>
-                    ))} */}
-                    {/* {course.features.length > 3 && (
-                      <div className="text-sm text-gray-500">
-                        +{course.features.length - 3} more features
-                      </div>
-                    )} */}
-                  </div>
 
                   <div className="flex items-center justify-between text-sm text-gray-600 mb-6">
                     <div className="flex items-center">
@@ -178,7 +102,7 @@ export default function CoursesPage() {
                   </div>
 
                   <Link
-  href={`/courses/${course.level.slug}`} // ✅ use level.slug here
+                    href={`/courses/${course.level.slug}`}
                     className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors block text-center"
                   >
                     Start Learning
