@@ -1,16 +1,6 @@
+import { FeaturedCourse } from '@/types';
 
-interface CourseCardProps {
-  id: number;
-  title: string;
-  instructor: string;
-  rating: number;
-  students: number;
-  price: number;
-  originalPrice: number;
-  image: string;
-  duration: string;
-  level: string;
-}
+interface CourseCardProps extends FeaturedCourse {}
 
 export default function CourseCard({
   title,

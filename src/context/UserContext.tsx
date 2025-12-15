@@ -1,47 +1,59 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
-
-type User = {
-  id: number;
-  name: string;
-  email: string;
-  currentLevel?: string;
-} | null;
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { User } from '@/types';
+import { STORAGE_KEYS } from '@/constants';
 
 type UserContextType = {
-  user: User;
-  login: (userData: NonNullable<User>) => void; // ✅ added
+  user: User | null;
+  login: (userData: User, token: string) => void;
   logout: () => void;
+  isAuthenticated: boolean;
 };
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
-  const [user, setUser] = useState<User>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   // Load user from localStorage when the app starts
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    if (typeof window === 'undefined') return;
+    
+    try {
+      const storedUser = localStorage.getItem(STORAGE_KEYS.USER);
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      }
+    } catch (error) {
+      console.error('Error loading user from localStorage:', error);
+      // Clear corrupted data
+      localStorage.removeItem(STORAGE_KEYS.USER);
     }
   }, []);
 
-  // ✅ Add login() method
-  const login = (userData: NonNullable<User>) => {
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-  };
+  const login = useCallback((userData: User, token: string) => {
+    try {
+      setUser(userData);
+      localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(userData));
+      localStorage.setItem(STORAGE_KEYS.TOKEN, token);
+    } catch (error) {
+      console.error('Error saving user to localStorage:', error);
+    }
+  }, []);
 
-  // ✅ Keep logout method
-  const logout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
-  };
+  const logout = useCallback(() => {
+    try {
+      localStorage.removeItem(STORAGE_KEYS.USER);
+      localStorage.removeItem(STORAGE_KEYS.TOKEN);
+      setUser(null);
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  }, []);
 
   return (
-    <UserContext.Provider value={{ user, login, logout }}>
+    <UserContext.Provider value={{ user, login, logout, isAuthenticated: !!user }}>
       {children}
     </UserContext.Provider>
   );

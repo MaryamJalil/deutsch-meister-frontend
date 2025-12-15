@@ -1,44 +1,13 @@
 'use client';
+
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { gql } from '@apollo/client';
 import { useQuery } from '@apollo/client/react';
-
-const COURSE_QUERY = gql`
-  query CourseByLevel($slug: String!) {
-    courseByLevel(slug: $slug) {
-      id
-      title
-      level {
-        slug
-        title
-      }
-      lessons {
-        id
-        title
-        content
-        order
-      }
-    }
-  }
-`;
-
-interface Lesson {
-  id: number;
-  title: string;
-  content: string;
-  order: number;
-}
-
-interface CourseData {
-  courseByLevel: {
-    id: number;
-    title: string;
-    level: { slug: string; title: string };
-    lessons: Lesson[];
-  } | null;
-}
+import { GET_COURSE_BY_LEVEL } from '@/lib/queries';
+import { CourseData } from '@/types';
+import Loading from '@/components/ui/Loading';
+import ErrorDisplay from '@/components/ui/ErrorDisplay';
 
 interface CourseVars {
   slug: string;
@@ -46,30 +15,24 @@ interface CourseVars {
 
 export default function CoursePage() {
   const params = useParams();
-  const slug = params.slug as string; // "A1", "B1", etc.
+  const slug = params.slug as string;
   const [selectedLesson, setSelectedLesson] = useState<number | null>(null);
 
-  const { data, loading, error } = useQuery<CourseData, CourseVars>(COURSE_QUERY, {
+  const { data, loading, error, refetch } = useQuery<CourseData, CourseVars>(GET_COURSE_BY_LEVEL, {
     variables: { slug },
   });
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center text-gray-600 text-lg">Loading course...</div>;
+    return <Loading message="Loading course..." />;
   }
 
   if (error || !data?.courseByLevel) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-20 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Course not found</h2>
-          <Link
-            href="/courses"
-            className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700"
-          >
-            Back to Courses
-          </Link>
-        </div>
-      </div>
+      <ErrorDisplay
+        message={error?.message || 'Course not found'}
+        title="Course not found"
+        onRetry={() => refetch()}
+      />
     );
   }
 
@@ -83,11 +46,12 @@ export default function CoursePage() {
 
   const handleLessonComplete = (lessonId: number, xp: number) => {
     setSelectedLesson(null);
-    alert(`Lesson completed! +${xp} XP earned!`);
+    // TODO: Implement actual lesson completion logic with backend
+    console.log(`Lesson ${lessonId} completed! +${xp} XP earned!`);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Course Header */}
         <div className="bg-white rounded-2xl shadow-sm p-6 mb-8">

@@ -1,9 +1,8 @@
-
 import Link from 'next/link';
 import CourseCard from '@/components/CourseCard';
-import Navbar from '@/components/Navbar';
+import { FeaturedCourse } from '@/types';
 
-const featuredCourses = [
+const featuredCourses: FeaturedCourse[] = [
   {
     id: 1,
     title: 'Complete German Course - Beginner to Advanced',
@@ -56,8 +55,7 @@ const featuredCourses = [
 
 export default function HomePage() {
   return (
-    <div className="pt-16">
-            <Navbar />
+    <div>
       {/* Hero Section */}
       <section className="bg-gradient-to-r from-purple-700 to-purple-900 text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
