@@ -1,130 +1,144 @@
-'use client';
-
+// app/courses/page.tsx
 import Link from 'next/link';
-import { useQuery } from '@apollo/client/react';
-import { GET_COURSES } from '@/lib/queries';
-import { Course } from '@/types';
-import { CEFR_LEVELS, LEVEL_COLORS } from '@/constants';
-import Loading from '@/components/ui/Loading';
-import ErrorDisplay from '@/components/ui/ErrorDisplay';
 
-interface CoursesResponse {
-  courses: Course[];
-}
+const LEVELS = [
+  {
+    slug: 'a1',
+    title: 'A1 Beginner',
+    description: 'Learn basic phrases, greetings, and everyday expressions',
+    color: 'bg-blue-50 border-blue-200 hover:border-blue-300',
+    textColor: 'text-blue-700',
+    icon: '🇩🇪'
+  },
+  {
+    slug: 'a2',
+    title: 'A2 Elementary',
+    description: 'Communicate in simple routine tasks',
+    color: 'bg-green-50 border-green-200 hover:border-green-300',
+    textColor: 'text-green-700',
+    icon: '📚'
+  },
+  {
+    slug: 'b1',
+    title: 'B1 Intermediate',
+    description: 'Understand main points of clear standard input',
+    color: 'bg-yellow-50 border-yellow-200 hover:border-yellow-300',
+    textColor: 'text-yellow-700',
+    icon: '🗣️'
+  },
+  {
+    slug: 'b2',
+    title: 'B2 Upper Intermediate',
+    description: 'Interact with fluency and spontaneity',
+    color: 'bg-orange-50 border-orange-200 hover:border-orange-300',
+    textColor: 'text-orange-700',
+    icon: '🎓'
+  },
+  {
+    slug: 'c1',
+    title: 'C1 Advanced',
+    description: 'Understand a wide range of demanding texts',
+    color: 'bg-red-50 border-red-200 hover:border-red-300',
+    textColor: 'text-red-700',
+    icon: '🏆'
+  },
+  {
+    slug: 'c2',
+    title: 'C2 Proficient',
+    description: 'Understand with ease virtually everything',
+    color: 'bg-purple-50 border-purple-200 hover:border-purple-300',
+    textColor: 'text-purple-700',
+    icon: '🌟'
+  },
+];
 
 export default function CoursesPage() {
-  const { loading, error, data, refetch } = useQuery<CoursesResponse>(GET_COURSES);
-  
-  if (loading) return <Loading message="Loading courses..." />;
-
-  if (error) return (
-    <ErrorDisplay
-      message={error.message}
-      title="Error loading courses"
-      onRetry={() => refetch()}
-    />
-  );
-
-  const courses = data?.courses || [];
-  
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             Choose Your German Course
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Start your journey to German fluency with our structured courses designed for all levels, 
-            from complete beginner to advanced speaker.
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+            Start your journey to German fluency with our structured courses designed for all levels, from complete beginner to advanced speaker.
           </p>
         </div>
 
-        {/* CEFR Level Guide */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-12">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">CEFR Levels Guide</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {CEFR_LEVELS.map(({ level, title }) => (
-              <div key={level} className="text-center p-4 border border-gray-200 rounded-lg">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2 ${
-                  level === 'A1' ? 'bg-green-100 text-green-600' :
-                  level === 'A2' ? 'bg-blue-100 text-blue-600' :
-                  level === 'B1' ? 'bg-purple-100 text-purple-600' :
-                  level === 'B2' ? 'bg-orange-100 text-orange-600' :
-                  level === 'C1' ? 'bg-pink-100 text-pink-600' :
-                  'bg-red-100 text-red-600'
-                }`}>
-                  <span className="font-bold">{level}</span>
-                </div>
-                <div className="text-sm font-medium text-gray-900">
-                  {title}
-                </div>
-              </div>
-            ))}
+        {/* Divider */}
+        <div className="relative mb-12">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-300"></div>
+          </div>
+          <div className="relative flex justify-center">
+            <span className="bg-white px-4 text-lg font-semibold text-gray-900">
+              CEFR Levels Guide
+            </span>
           </div>
         </div>
 
-        {/* Courses Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          
-          {courses.map((course) => {
-            const slug = course.level.slug;
-            const colors = LEVEL_COLORS[slug] || LEVEL_COLORS.default;
-            
-            return (
-              <div key={course.id} className="bg-white rounded-2xl shadow-sm overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1">
-                <div className={`h-3 bg-gradient-to-r ${colors.bg}`}></div>
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${colors.badge}`}>
-                      {slug}
+        {/* Levels Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {LEVELS.map((level) => (
+            <Link
+              key={level.slug}
+              href={`/courses/${level.slug}`}
+              className={`block p-6 rounded-2xl border-2 transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${level.color}`}
+            >
+              <div className="flex items-start space-x-4">
+                <div className={`text-2xl ${level.textColor}`}>
+                  {level.icon}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-xl font-bold text-gray-900">
+                      {level.title}
+                    </h3>
+                    <span className={`text-sm font-bold px-2 py-1 rounded ${level.textColor} bg-white`}>
+                      {level.slug.toUpperCase()}
                     </span>
                   </div>
-
-                  <h3 className="text-xl font-bold text-gray-900 mb-3">{course.title}</h3>
-                  <p className="text-gray-600 mb-4">{course.description}</p>
-
-
-                  <div className="flex items-center justify-between text-sm text-gray-600 mb-6">
-                    <div className="flex items-center">
-                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      {course.hours} hours
-                    </div>
-                    <div className="flex items-center">
-                      <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                      </svg>
-                      {course.lessonCount} lessons
-                    </div>
+                  <p className="text-gray-600 mb-4">
+                    {level.description}
+                  </p>
+                  <div className="text-sm text-gray-500">
+                    Click to view audio lessons →
                   </div>
-
-                  <Link
-                    href={`/courses/${course.level.slug}`}
-                    className="w-full bg-purple-600 text-white py-3 rounded-lg font-medium hover:bg-purple-700 transition-colors block text-center"
-                  >
-                    Start Learning
-                  </Link>
                 </div>
               </div>
-            );
-          })}
+            </Link>
+          ))}
         </div>
 
-        {/* If no courses found */}
-        {courses.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-gray-500 text-lg mb-4">No courses available yet</div>
-            <Link
-              href="/"
-              className="text-purple-600 hover:text-purple-700 font-medium"
-            >
-              Return to homepage
-            </Link>
+        {/* Call to Action */}
+        <div className="text-center">
+          <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl p-8 border border-blue-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              Ready to Start Learning?
+            </h2>
+            <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
+              Begin with A1 if you're new to German, or take our placement test to find your level.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Link
+                href="/courses/a1"
+                className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all"
+              >
+                Start with A1 Beginner
+                <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                </svg>
+              </Link>
+              <Link
+                href="/placement-test"
+                className="inline-flex items-center justify-center px-6 py-3 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:border-blue-300 hover:text-blue-600 transition-all"
+              >
+                Take Placement Test
+              </Link>
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
