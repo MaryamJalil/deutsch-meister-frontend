@@ -1,3 +1,4 @@
+// types/index.ts - Fixed version
 // Shared types across the application
 
 export interface User {
@@ -7,6 +8,33 @@ export interface User {
   currentLevel?: string;
 }
 
+export interface AudioFile {
+  id: string;
+  title: string;
+  fileName: string;
+  url: string;
+  s3Key: string;
+  duration: string;
+  order: number;
+  description?: string;
+  signedUrl?: string; // Will be populated client-side
+}
+
+export interface CourseLevel {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+}
+
+export interface Lesson {
+  id: number;
+  title: string;
+  order: number;
+  content?: string;
+  audioFiles: AudioFile[];
+}
+
 export interface Course {
   id: string;
   title: string;
@@ -14,26 +42,16 @@ export interface Course {
   hours: number;
   lessonCount: number;
   features: string[];
-  level: Level;
-}
-
-export interface Level {
-  slug: string;
-  title: string;
-}
-
-export interface Lesson {
-  id: number;
-  title: string;
-  content: string;
-  order: number;
+  level: CourseLevel;
+  lessons: Lesson[];
 }
 
 export interface CourseData {
   courseByLevel: {
     id: number;
     title: string;
-    level: Level;
+    description: string;
+    level: CourseLevel;
     lessons: Lesson[];
   } | null;
 }
@@ -50,4 +68,3 @@ export interface FeaturedCourse {
   duration: string;
   level: string;
 }
-

@@ -1,6 +1,7 @@
 import { FeaturedCourse } from '@/types';
 
-interface CourseCardProps extends FeaturedCourse {}
+// Remove the empty interface and use type directly
+type CourseCardProps = FeaturedCourse;
 
 export default function CourseCard({
   title,
@@ -10,14 +11,23 @@ export default function CourseCard({
   price,
   originalPrice,
   duration,
-  level
+  level,
+  image,
+  id // Added to avoid unused variable warning
 }: CourseCardProps) {
   const discount = Math.round(((originalPrice - price) / originalPrice) * 100);
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-300">
       {/* Course Image */}
-      <div className="h-48 bg-gradient-to-br from-purple-500 to-blue-500 relative">
+      <div 
+        className="h-48 relative bg-cover bg-center"
+        style={{ 
+          backgroundImage: image ? `url(${image})` : 'linear-gradient(to bottom right, #8b5cf6, #3b82f6)',
+          backgroundSize: 'cover'
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-500/20 to-blue-500/20"></div>
         <div className="absolute top-3 left-3">
           <span className="bg-purple-600 text-white text-xs font-medium px-2 py-1 rounded">
             Bestseller
@@ -34,7 +44,7 @@ export default function CourseCard({
         <p className="text-sm text-gray-600 mb-2">{instructor}</p>
         
         <div className="flex items-center space-x-2 mb-2">
-          <span className="text-yellow-600 font-bold text-sm">{rating}</span>
+          <span className="text-yellow-600 font-bold text-sm">{rating.toFixed(1)}</span>
           <div className="flex">
             {[...Array(5)].map((_, i) => (
               <svg
@@ -53,14 +63,14 @@ export default function CourseCard({
         <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
           <span>{duration}</span>
           <span>•</span>
-          <span>{level}</span>
+          <span className="px-2 py-1 bg-gray-100 rounded text-xs">{level}</span>
         </div>
 
         <div className="flex items-center space-x-2 mb-3">
-          <span className="text-gray-900 font-bold text-lg">${price}</span>
+          <span className="text-gray-900 font-bold text-lg">${price.toFixed(2)}</span>
           {originalPrice > price && (
             <>
-              <span className="text-gray-500 line-through text-sm">${originalPrice}</span>
+              <span className="text-gray-500 line-through text-sm">${originalPrice.toFixed(2)}</span>
               <span className="bg-red-100 text-red-800 text-xs font-medium px-1 rounded">
                 {discount}% off
               </span>
